@@ -1,0 +1,14 @@
+name: 'Devcontainer Features'
+description: 'Linter and Packager for Devcontainer feature definition(s)'
+author: 'GitHub'
+branding:
+  icon: box
+  color: blue
+inputs:
+  path-to-features:
+    required: false
+    description: 'Relative path to features.json and definition(s). Defaults to root directory.'
+    default: '.'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
