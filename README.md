@@ -1,3 +1,5 @@
+> ⚠️ NOTE: This is a work-in-progress project. Subject to (heavy) modification!  
+
 # Publish Development container `features` (GitHub Action)
 
 Used in the [dev-container-features-template](https://github.com/microsoft/dev-container-features-template) illlustating an approach to publish custom "devcontainer features" to your GitHub repo.
