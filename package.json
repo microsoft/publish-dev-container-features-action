@@ -31,7 +31,7 @@
     "tar": "^6.1.11"
   },
   "devDependencies": {
-    "@types/node": "^16.11.6",
+    "@types/node": "^16.11.13",
     "@types/tar": "^6.1.1",
     "@vercel/ncc": "^0.31.1",
     "eslint": "^8.1.0",
