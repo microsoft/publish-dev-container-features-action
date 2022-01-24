@@ -44,7 +44,7 @@ function run() {
             // Defaults to root directory, "."
             const featuresPath = core.getInput('path-to-features');
             core.debug(`Starting...`);
-            core.debug('Inserting metadata onto features.json');
+            core.debug('Inserting metadata onto devcontainer-features.json');
             yield (0, utils_1.addMetadataToFeaturesJson)(featuresPath);
             core.debug('calling tarFeaturesDirectory()');
             yield (0, utils_1.tarFeaturesDirectory)(featuresPath);
@@ -112,15 +112,17 @@ exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
-    if (file === './features.tgz') {
+    if (file === './devcontainer-features.tgz') {
         return false;
     }
     return true;
 };
 function tarFeaturesDirectory(path) {
     return __awaiter(this, void 0, void 0, function* () {
-        return tar.create({ file: 'features.tgz', C: path, filter }, ['.']).then(_ => {
-            core.info('Compressed features directory to file features.tgz');
+        return tar
+            .create({ file: 'devcontainer-features.tgz', C: path, filter }, ['.'])
+            .then(_ => {
+            core.info('Compressed features directory to file devcontainer-features.tgz');
         });
     });
 }
