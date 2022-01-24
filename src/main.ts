@@ -10,7 +10,7 @@ async function run(): Promise<void> {
 
     core.debug(`Starting...`)
 
-    core.debug('Inserting metadata onto features.json')
+    core.debug('Inserting metadata onto devcontainer-features.json')
     await addMetadataToFeaturesJson(featuresPath)
 
     core.debug('calling tarFeaturesDirectory()')
