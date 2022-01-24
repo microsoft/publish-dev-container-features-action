@@ -28,10 +28,10 @@ export async function tarFeaturesDirectory(path: string) {
 }
 
 export async function addMetadataToFeaturesJson(pathToFeatureDir: string) {
-  const p = path.join(pathToFeatureDir, 'features.json')
+  const p = path.join(pathToFeatureDir, 'devcontainer-features.json')
   const featuresJson = (await (readLocalFile(p) ?? '')).toString()
   if (featuresJson === '') {
-    core.setFailed('Could not parse features.json')
+    core.setFailed('Could not parse devcontainer-features.json')
     return
   }
 

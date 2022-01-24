@@ -128,10 +128,10 @@ exports.tarFeaturesDirectory = tarFeaturesDirectory;
 function addMetadataToFeaturesJson(pathToFeatureDir) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const p = path_1.default.join(pathToFeatureDir, 'features.json');
+        const p = path_1.default.join(pathToFeatureDir, 'devcontainer-features.json');
         const featuresJson = (yield ((_a = (0, exports.readLocalFile)(p)) !== null && _a !== void 0 ? _a : '')).toString();
         if (featuresJson === '') {
-            core.setFailed('Could not parse features.json');
+            core.setFailed('Could not parse devcontainer-features.json');
             return;
         }
         // Insert github repo metadata
