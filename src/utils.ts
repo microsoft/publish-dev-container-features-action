@@ -15,20 +15,19 @@ export const writeLocalFile = promisify(fs.writeFile)
 // Filter what gets included in the tar.c
 const filter = (file: string, _: tar.FileStat) => {
   // Don't include the archive itself.
-  if (file === './devcontainer-features.tgz') {
+  if (
+    file === './devcontainer-features.tgz' ||
+    file === './devcontainer-template.tgz'
+  ) {
     return false
   }
   return true
 }
 
-export async function tarFeaturesDirectory(path: string) {
-  return tar
-    .create({file: 'devcontainer-features.tgz', C: path, filter}, ['.'])
-    .then(_ => {
-      core.info(
-        'Compressed features directory to file devcontainer-features.tgz'
-      )
-    })
+export async function tarDirectory(path: string, tgzName: string) {
+  return tar.create({file: tgzName, C: path, filter}, ['.']).then(_ => {
+    core.info('Compressed features directory to file devcontainer-features.tgz')
+  })
 }
 
 export async function addMetadataToFeaturesJson(pathToFeatureDir: string) {

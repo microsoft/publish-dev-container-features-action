@@ -39,16 +39,46 @@ const core = __importStar(__nccwpck_require__(2186));
 const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug('Reading input parameters...');
+        const shouldPublishFeatures = core.getInput('publish-features') === 'true';
+        const shouldPublishTemplate = core.getInput('publish-template') === 'true';
+        if (shouldPublishFeatures && shouldPublishTemplate) {
+            core.setFailed('Cannot publish features and template at the same time');
+            return;
+        }
+        if (shouldPublishFeatures) {
+            core.info('Publishing features...');
+            packageFeatures();
+        }
+        if (shouldPublishTemplate) {
+            core.info('Publishing template...');
+            packageTemplate();
+        }
+    });
+}
+function packageFeatures() {
+    return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.debug('Reading input parameters...');
-            // Defaults to root directory, "."
+            core.debug('Reading input parameters for packaging features...');
             const featuresPath = core.getInput('path-to-features');
-            core.debug(`Starting...`);
-            core.debug('Inserting metadata onto devcontainer-features.json');
+            core.info('Inserting metadata onto devcontainer-features.json');
             yield (0, utils_1.addMetadataToFeaturesJson)(featuresPath);
-            core.debug('calling tarFeaturesDirectory()');
-            yield (0, utils_1.tarFeaturesDirectory)(featuresPath);
-            core.debug('Run has finished.');
+            core.info('Starting to tar');
+            yield (0, utils_1.tarDirectory)(featuresPath, 'devcontainer-features.tgz');
+            core.info('Package features has finished.');
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+    });
+}
+function packageTemplate() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            core.info('Starting to tar');
+            yield (0, utils_1.tarDirectory)('.', 'devcontainer-template.tgz');
+            core.info('Package template has finished.');
         }
         catch (error) {
             if (error instanceof Error)
@@ -99,7 +129,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addMetadataToFeaturesJson = exports.tarFeaturesDirectory = exports.writeLocalFile = exports.readLocalFile = void 0;
+exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.writeLocalFile = exports.readLocalFile = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const tar = __importStar(__nccwpck_require__(4674));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -112,21 +142,21 @@ exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
-    if (file === './devcontainer-features.tgz') {
+    if (file === './devcontainer-features.tgz' || file === './devcontainer-template.tgz') {
         return false;
     }
     return true;
 };
-function tarFeaturesDirectory(path) {
+function tarDirectory(path, tgzName) {
     return __awaiter(this, void 0, void 0, function* () {
         return tar
-            .create({ file: 'devcontainer-features.tgz', C: path, filter }, ['.'])
+            .create({ file: tgzName, C: path, filter }, ['.'])
             .then(_ => {
             core.info('Compressed features directory to file devcontainer-features.tgz');
         });
     });
 }
-exports.tarFeaturesDirectory = tarFeaturesDirectory;
+exports.tarDirectory = tarDirectory;
 function addMetadataToFeaturesJson(pathToFeatureDir) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {

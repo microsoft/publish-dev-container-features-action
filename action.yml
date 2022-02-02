@@ -1,14 +1,26 @@
-name: 'Devcontainer Features'
-description: 'Linter and Packager for Devcontainer feature definition(s)'
+name: 'Dev Container Utilities'
+description: 'Package your custom development container feature definition(s) or template'
 author: 'GitHub'
 branding:
   icon: box
   color: blue
 inputs:
+  # Global options
+  publish-features:
+    required: true
+    description: '["true"/"false"] Publish a tgz of dev container features on trigger'
+  publish-template:
+    required: true
+    description: '["true"/"false"] Publish a tgz of repo as dev container template on trigger'
+
+  # 'features' options
   path-to-features:
     required: false
-    description: 'Relative path to features.json and definition(s). Defaults to root directory.'
+    description: 'Relative path to features.json and definition(s). Has no effect is "publish-features" is "false".  Defaults to root directory.'
     default: '.'
+
+  # 'template' options
+  #   <none>
 runs:
   using: 'node12'
   main: 'dist/index.js'
