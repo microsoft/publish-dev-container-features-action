@@ -28,7 +28,7 @@ const filter = (file: string, _: tar.FileStat) => {
 
 export async function tarDirectory(path: string, tgzName: string) {
   return tar.create({file: tgzName, C: path, filter}, ['.']).then(_ => {
-    core.info('Compressed features directory to file devcontainer-features.tgz')
+    core.info(`Compressed features directory to file ${tgzName}.tgz`)
   })
 }
 
