@@ -71,7 +71,7 @@ export async function setupTemplateOutputFolders(templateName: string) {
   await mkdirLocal(`./temp-dir/containers/${templateName}`, {
     recursive: true
   })
-  await mkdirLocal(`./temp-dir/container-readmes/${templateName}`, {
+  await mkdirLocal(`./temp-dir/containers-readmes/${templateName}`, {
     recursive: true
   })
   return './temp-dir'
@@ -88,6 +88,6 @@ export async function copyTemplateFiles(templateName: string) {
   )
   renameLocal(
     `./README.md`,
-    `./temp-dir/container-readmes/${templateName}/README.md`
+    `./temp-dir/containers-readmes/${templateName}/README.md`
   )
 }

@@ -211,7 +211,7 @@ function setupTemplateOutputFolders(templateName) {
         yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, {
             recursive: true
         });
-        yield (0, exports.mkdirLocal)(`./temp-dir/container-readmes/${templateName}`, {
+        yield (0, exports.mkdirLocal)(`./temp-dir/containers-readmes/${templateName}`, {
             recursive: true
         });
         return './temp-dir';
@@ -222,7 +222,7 @@ function copyTemplateFiles(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, exports.renameLocal)(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}/definition-manifest.json`);
         (0, exports.renameLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}/.devcontainer`);
-        (0, exports.renameLocal)(`./README.md`, `./temp-dir/container-readmes/${templateName}/README.md`);
+        (0, exports.renameLocal)(`./README.md`, `./temp-dir/containers-readmes/${templateName}/README.md`);
     });
 }
 exports.copyTemplateFiles = copyTemplateFiles;
