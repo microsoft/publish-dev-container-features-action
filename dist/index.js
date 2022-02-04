@@ -6,6 +6,10 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 "use strict";
 
+/*--------------------------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
+ *-------------------------------------------------------------------------------------------------------------*/
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -43,24 +47,28 @@ function run() {
         const shouldPublishFeatures = core.getInput('publish-features') === 'true';
         const shouldPublishTemplate = core.getInput('publish-template') === 'true';
         if (shouldPublishFeatures && shouldPublishTemplate) {
-            core.setFailed('Cannot publish features and template at the same time');
+            core.setFailed('Cannot publish both features and template at the same time');
             return;
         }
         if (shouldPublishFeatures) {
             core.info('Publishing features...');
-            packageFeatures();
+            const featuresPath = core.getInput('path-to-features'); // Default is '.'
+            packageFeatures(featuresPath);
         }
         if (shouldPublishTemplate) {
             core.info('Publishing template...');
-            packageTemplate();
+            const templateName = core.getInput('template-name');
+            if (!templateName || templateName === '') {
+                core.setFailed('Must specify template name');
+                return;
+            }
+            packageTemplate(templateName);
         }
     });
 }
-function packageFeatures() {
+function packageFeatures(featuresPath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.debug('Reading input parameters for packaging features...');
-            const featuresPath = core.getInput('path-to-features');
             core.info('Inserting metadata onto devcontainer-features.json');
             yield (0, utils_1.addMetadataToFeaturesJson)(featuresPath);
             core.info('Starting to tar');
@@ -73,11 +81,17 @@ function packageFeatures() {
         }
     });
 }
-function packageTemplate() {
+function packageTemplate(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            // core.info('Asking vscdc to package template...')
+            // const package = require('./vscdc/src/package').package;
+            core.info('Setting up output folders...');
+            const tmpDir = yield (0, utils_1.setupTemplateOutputFolders)(templateName);
+            core.info('Copying template files...');
+            yield (0, utils_1.copyTemplateFiles)(templateName);
             core.info('Starting to tar');
-            yield (0, utils_1.tarDirectory)('.', 'devcontainer-template.tgz');
+            yield (0, utils_1.tarDirectory)(tmpDir, 'devcontainer-template.tgz');
             core.info('Package template has finished.');
         }
         catch (error) {
@@ -129,7 +143,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.writeLocalFile = exports.readLocalFile = void 0;
+exports.copyTemplateFiles = exports.setupTemplateOutputFolders = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.cpLocal = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const tar = __importStar(__nccwpck_require__(4674));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -139,19 +153,20 @@ const util_1 = __nccwpck_require__(3837);
 const path_1 = __importDefault(__nccwpck_require__(1017));
 exports.readLocalFile = (0, util_1.promisify)(fs.readFile);
 exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
+exports.mkdirLocal = (0, util_1.promisify)(fs.mkdir);
+exports.cpLocal = (0, util_1.promisify)(fs.cp);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
-    if (file === './devcontainer-features.tgz' || file === './devcontainer-template.tgz') {
+    if (file === './devcontainer-features.tgz' ||
+        file === './devcontainer-template.tgz') {
         return false;
     }
     return true;
 };
 function tarDirectory(path, tgzName) {
     return __awaiter(this, void 0, void 0, function* () {
-        return tar
-            .create({ file: tgzName, C: path, filter }, ['.'])
-            .then(_ => {
+        return tar.create({ file: tgzName, C: path, filter }, ['.']).then(_ => {
             core.info('Compressed features directory to file devcontainer-features.tgz');
         });
     });
@@ -188,6 +203,23 @@ function addMetadataToFeaturesJson(pathToFeatureDir) {
     });
 }
 exports.addMetadataToFeaturesJson = addMetadataToFeaturesJson;
+function setupTemplateOutputFolders(templateName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield (0, exports.mkdirLocal)(`./temp-dir/manifest/${templateName}`, { recursive: true });
+        yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, { recursive: true });
+        yield (0, exports.mkdirLocal)(`./temp-dir/container-readmes/${templateName}`, { recursive: true });
+        return './temp-dir';
+    });
+}
+exports.setupTemplateOutputFolders = setupTemplateOutputFolders;
+function copyTemplateFiles(templateName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield (0, exports.cpLocal)(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}`);
+        yield (0, exports.cpLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}`);
+        yield (0, exports.cpLocal)(`./README.md`, `./temp-dir/container-readmes/${templateName}`);
+    });
+}
+exports.copyTemplateFiles = copyTemplateFiles;
 
 
 /***/ }),

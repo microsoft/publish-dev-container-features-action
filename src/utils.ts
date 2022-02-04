@@ -11,6 +11,8 @@ import {FeaturesConfig, SourceInformation} from './contracts/feature'
 
 export const readLocalFile = promisify(fs.readFile)
 export const writeLocalFile = promisify(fs.writeFile)
+export const mkdirLocal = promisify(fs.mkdir)
+export const cpLocal = promisify(fs.cp)
 
 // Filter what gets included in the tar.c
 const filter = (file: string, _: tar.FileStat) => {
@@ -60,4 +62,22 @@ export async function addMetadataToFeaturesJson(pathToFeatureDir: string) {
 
   // Write back to the file
   await writeLocalFile(p, JSON.stringify(parsed, undefined, 4))
+}
+
+export async function setupTemplateOutputFolders(templateName: string) {
+  await mkdirLocal(`./temp-dir/manifest/${templateName}`, {recursive: true})
+  await mkdirLocal(`./temp-dir/containers/${templateName}`, {recursive: true})
+  await mkdirLocal(`./temp-dir/container-readmes/${templateName}`, {
+    recursive: true
+  })
+  return './temp-dir'
+}
+
+export async function copyTemplateFiles(templateName: string) {
+  await cpLocal(
+    `./definition-manifest.json`,
+    `./temp-dir/manifest/${templateName}`
+  )
+  await cpLocal(`./.devcontainer/`, `./temp-dir/containers/${templateName}`)
+  await cpLocal(`./README.md`, `./temp-dir/container-readmes/${templateName}`)
 }
