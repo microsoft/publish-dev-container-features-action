@@ -207,7 +207,9 @@ function setupTemplateOutputFolders(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, exports.mkdirLocal)(`./temp-dir/manifest/${templateName}`, { recursive: true });
         yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, { recursive: true });
-        yield (0, exports.mkdirLocal)(`./temp-dir/container-readmes/${templateName}`, { recursive: true });
+        yield (0, exports.mkdirLocal)(`./temp-dir/container-readmes/${templateName}`, {
+            recursive: true
+        });
         return './temp-dir';
     });
 }

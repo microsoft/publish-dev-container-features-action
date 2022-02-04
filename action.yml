@@ -5,7 +5,7 @@ branding:
   icon: box
   color: blue
 inputs:
-  # Global options
+  # Global options (Choose 1)
   publish-features:
     required: true
     description: '["true"/"false"] Publish a tgz of dev container features on trigger'
@@ -20,7 +20,10 @@ inputs:
     default: '.'
 
   # 'template' options
-  #   <none>
+  template-name:
+    required: false
+    description: 'Name of the template (eg: ruby)'
+
 runs:
   using: 'node12'
   main: 'dist/index.js'
