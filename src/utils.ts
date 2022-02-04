@@ -12,7 +12,7 @@ import {FeaturesConfig, SourceInformation} from './contracts/feature'
 export const readLocalFile = promisify(fs.readFile)
 export const writeLocalFile = promisify(fs.writeFile)
 export const mkdirLocal = promisify(fs.mkdir)
-export const cpLocal = promisify(fs.cp)
+export const cpLocal = promisify(fs.copyFile)
 
 // Filter what gets included in the tar.c
 const filter = (file: string, _: tar.FileStat) => {

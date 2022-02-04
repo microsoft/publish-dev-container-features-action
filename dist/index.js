@@ -154,7 +154,7 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 exports.readLocalFile = (0, util_1.promisify)(fs.readFile);
 exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
 exports.mkdirLocal = (0, util_1.promisify)(fs.mkdir);
-exports.cpLocal = (0, util_1.promisify)(fs.cp);
+exports.cpLocal = (0, util_1.promisify)(fs.copyFile);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
