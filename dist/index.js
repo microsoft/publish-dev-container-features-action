@@ -143,7 +143,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.copyTemplateFiles = exports.setupTemplateOutputFolders = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
+exports.copyTemplateFiles = exports.setupTemplateOutputFolders = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.renameLocal = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const tar = __importStar(__nccwpck_require__(4674));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -154,6 +154,7 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 exports.readLocalFile = (0, util_1.promisify)(fs.readFile);
 exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
 exports.mkdirLocal = (0, util_1.promisify)(fs.mkdir);
+exports.renameLocal = (0, util_1.promisify)(fs.rename);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
@@ -204,8 +205,12 @@ function addMetadataToFeaturesJson(pathToFeatureDir) {
 exports.addMetadataToFeaturesJson = addMetadataToFeaturesJson;
 function setupTemplateOutputFolders(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (0, exports.mkdirLocal)(`./temp-dir/manifest/${templateName}`, { recursive: true });
-        yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, { recursive: true });
+        yield (0, exports.mkdirLocal)(`./temp-dir/manifest/${templateName}`, {
+            recursive: true
+        });
+        yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, {
+            recursive: true
+        });
         yield (0, exports.mkdirLocal)(`./temp-dir/container-readmes/${templateName}`, {
             recursive: true
         });
@@ -215,9 +220,9 @@ function setupTemplateOutputFolders(templateName) {
 exports.setupTemplateOutputFolders = setupTemplateOutputFolders;
 function copyTemplateFiles(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
-        fs.cpSync(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}/definition-manifest.json`);
-        fs.cpSync(`./.devcontainer/`, `./temp-dir/containers/${templateName}`);
-        fs.cpSync(`./README.md`, `./temp-dir/container-readmes/${templateName}/README.md`);
+        (0, exports.renameLocal)(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}/definition-manifest.json`);
+        (0, exports.renameLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}`);
+        (0, exports.renameLocal)(`./README.md`, `./temp-dir/container-readmes/${templateName}/README.md`);
     });
 }
 exports.copyTemplateFiles = copyTemplateFiles;
