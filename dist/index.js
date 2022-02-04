@@ -167,7 +167,7 @@ const filter = (file, _) => {
 function tarDirectory(path, tgzName) {
     return __awaiter(this, void 0, void 0, function* () {
         return tar.create({ file: tgzName, C: path, filter }, ['.']).then(_ => {
-            core.info(`Compressed features directory to file ${tgzName}.tgz`);
+            core.info(`Compressed features directory to file ${tgzName}`);
         });
     });
 }
