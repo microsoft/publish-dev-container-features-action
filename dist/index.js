@@ -221,7 +221,7 @@ exports.setupTemplateOutputFolders = setupTemplateOutputFolders;
 function copyTemplateFiles(templateName) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, exports.renameLocal)(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}/definition-manifest.json`);
-        (0, exports.renameLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}`);
+        (0, exports.renameLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}/.devcontainer`);
         (0, exports.renameLocal)(`./README.md`, `./temp-dir/container-readmes/${templateName}/README.md`);
     });
 }

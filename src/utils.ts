@@ -82,7 +82,10 @@ export async function copyTemplateFiles(templateName: string) {
     `./definition-manifest.json`,
     `./temp-dir/manifest/${templateName}/definition-manifest.json`
   )
-  renameLocal(`./.devcontainer/`, `./temp-dir/containers/${templateName}/.devcontainer`)
+  renameLocal(
+    `./.devcontainer/`,
+    `./temp-dir/containers/${templateName}/.devcontainer`
+  )
   renameLocal(
     `./README.md`,
     `./temp-dir/container-readmes/${templateName}/README.md`
