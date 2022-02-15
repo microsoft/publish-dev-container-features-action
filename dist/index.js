@@ -45,7 +45,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug('Reading input parameters...');
         const shouldPublishFeatures = core.getInput('publish-features') === 'true';
-        const shouldPublishTemplate = core.getInput('publish-template') === 'true';
+        const shouldPublishTemplate = core.getInput('publish-definitions') === 'true';
         if (shouldPublishFeatures) {
             core.info('Publishing features...');
             const featuresPath = core.getInput('path-to-features');
@@ -53,9 +53,10 @@ function run() {
         }
         if (shouldPublishTemplate) {
             core.info('Publishing template...');
-            const basePathToDefinitions = core.getInput('base-path-to-definitions');
+            const basePathToDefinitions = core.getInput('path-to-definitions');
             packageDefinitions(basePathToDefinitions);
         }
+        // TODO: Programatically generate `devcontainer-index.json ?
     });
 }
 function packageFeatures(featuresPath) {
@@ -79,7 +80,7 @@ function packageDefinitions(basePath) {
             // core.info('Asking vscdc to package template...')
             // const package = require('./vscdc/src/package').package;
             core.info(`Archiving all definitions in ${basePath}`);
-            const definitionArchives = (0, utils_1.getDefinitionsAndPackage)(basePath);
+            const definitionArchives = yield (0, utils_1.getDefinitionsAndPackage)(basePath);
             core.info('Package definition has finished.');
         }
         catch (error) {
@@ -227,7 +228,7 @@ function getDefinitionsAndPackage(basePath) {
             }
             files.forEach(file => {
                 core.info(`definition ==> ${file}`);
-                if (file !== "." && file !== "..") {
+                if (file !== '.' && file !== '..') {
                     const archiveName = `devcontainer-definition-${file}.tgz`;
                     tarDirectory(`${basePath}/${file}`, archiveName);
                     archives.push(archiveName);

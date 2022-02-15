@@ -15,7 +15,7 @@ async function run(): Promise<void> {
   core.debug('Reading input parameters...')
 
   const shouldPublishFeatures = core.getInput('publish-features') === 'true'
-  const shouldPublishTemplate = core.getInput('publish-template') === 'true'
+  const shouldPublishTemplate = core.getInput('publish-definitions') === 'true'
 
   if (shouldPublishFeatures) {
     core.info('Publishing features...')
@@ -25,9 +25,11 @@ async function run(): Promise<void> {
 
   if (shouldPublishTemplate) {
     core.info('Publishing template...')
-    const basePathToDefinitions = core.getInput('base-path-to-definitions')
+    const basePathToDefinitions = core.getInput('path-to-definitions')
     packageDefinitions(basePathToDefinitions)
   }
+
+  // TODO: Programatically generate `devcontainer-index.json ?
 }
 
 async function packageFeatures(featuresPath: string): Promise<void> {

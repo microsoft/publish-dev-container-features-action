@@ -8,19 +8,19 @@ inputs:
   # Global options
   publish-features:
     required: true
-    description: '["true"/"false"] Publish a tgz of all dev container features on trigger'
+    description: '["true"/"false"] Generates a tgz of all dev container features at `path-to-features`'
   publish-definitions:
     required: true
-    description: '["true"/"false"] Publish individual tgz(s) for each dev container definition'
+    description: '["true"/"false"] Generates individual tgz(s) for each dev container definition at `base-path-to-definitions`'
 
   # 'features' options
   path-to-features:
     required: false
     default: './features'
-    description: 'Relative path to devcontainer-features.json'
+    description: 'Relative base path to the devcontainer-features.json manifest and relevant scripts'
 
   # 'definitions' options
-  base-path-to-definitions:
+  path-to-definitions:
     required: false
     default: './definitions'
     description: 'Relative base path to definition templates. Each subfolder of this directory will be packaged as its own definition.'
