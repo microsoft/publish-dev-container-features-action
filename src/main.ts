@@ -8,8 +8,7 @@ import * as github from '@actions/github'
 import {
   addMetadataToFeaturesJson,
   tarDirectory,
-  setupTemplateOutputFolders,
-  copyTemplateFiles
+  getDefinitionsAndPackage
 } from './utils'
 
 async function run(): Promise<void> {
@@ -18,26 +17,16 @@ async function run(): Promise<void> {
   const shouldPublishFeatures = core.getInput('publish-features') === 'true'
   const shouldPublishTemplate = core.getInput('publish-template') === 'true'
 
-  if (shouldPublishFeatures && shouldPublishTemplate) {
-    core.setFailed('Cannot publish both features and template at the same time')
-    return
-  }
-
   if (shouldPublishFeatures) {
     core.info('Publishing features...')
-    const featuresPath = core.getInput('path-to-features') // Default is '.'
+    const featuresPath = core.getInput('path-to-features')
     packageFeatures(featuresPath)
   }
 
   if (shouldPublishTemplate) {
     core.info('Publishing template...')
-    const templateName = core.getInput('template-name')
-    if (!templateName || templateName === '') {
-      core.setFailed('Must specify template name')
-      return
-    }
-
-    packageTemplate(templateName)
+    const basePathToDefinitions = core.getInput('base-path-to-definitions')
+    packageDefinitions(basePathToDefinitions)
   }
 }
 
@@ -55,21 +44,15 @@ async function packageFeatures(featuresPath: string): Promise<void> {
   }
 }
 
-async function packageTemplate(templateName: string): Promise<void> {
+async function packageDefinitions(basePath: string): Promise<void> {
   try {
     // core.info('Asking vscdc to package template...')
     // const package = require('./vscdc/src/package').package;
 
-    core.info('Setting up output folders...')
-    const tmpDir = await setupTemplateOutputFolders(templateName)
+    core.info(`Archiving all definitions in ${basePath}`)
+    const definitionArchives = await getDefinitionsAndPackage(basePath)
 
-    core.info('Copying template files...')
-    await copyTemplateFiles(templateName)
-
-    core.info('Starting to tar')
-    await tarDirectory(tmpDir, 'devcontainer-template.tgz')
-
-    core.info('Package template has finished.')
+    core.info('Package definition has finished.')
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

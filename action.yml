@@ -5,24 +5,25 @@ branding:
   icon: box
   color: blue
 inputs:
-  # Global options (Choose 1)
+  # Global options
   publish-features:
     required: true
-    description: '["true"/"false"] Publish a tgz of dev container features on trigger'
-  publish-template:
+    description: '["true"/"false"] Publish a tgz of all dev container features on trigger'
+  publish-definitions:
     required: true
-    description: '["true"/"false"] Publish a tgz of repo as dev container template on trigger'
+    description: '["true"/"false"] Publish individual tgz(s) for each dev container definition'
 
   # 'features' options
   path-to-features:
     required: false
-    description: 'Relative path to features.json and definition(s). Has no effect is "publish-features" is "false".  Defaults to root directory.'
-    default: '.'
+    default: './features'
+    description: 'Relative path to devcontainer-features.json'
 
-  # 'template' options
-  template-name:
+  # 'definitions' options
+  base-path-to-definitions:
     required: false
-    description: 'Name of the template (eg: ruby)'
+    default: './definitions'
+    description: 'Relative base path to definition templates. Each subfolder of this directory will be packaged as its own definition.'
 
 runs:
   using: 'node12'

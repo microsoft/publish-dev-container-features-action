@@ -46,23 +46,15 @@ function run() {
         core.debug('Reading input parameters...');
         const shouldPublishFeatures = core.getInput('publish-features') === 'true';
         const shouldPublishTemplate = core.getInput('publish-template') === 'true';
-        if (shouldPublishFeatures && shouldPublishTemplate) {
-            core.setFailed('Cannot publish both features and template at the same time');
-            return;
-        }
         if (shouldPublishFeatures) {
             core.info('Publishing features...');
-            const featuresPath = core.getInput('path-to-features'); // Default is '.'
+            const featuresPath = core.getInput('path-to-features');
             packageFeatures(featuresPath);
         }
         if (shouldPublishTemplate) {
             core.info('Publishing template...');
-            const templateName = core.getInput('template-name');
-            if (!templateName || templateName === '') {
-                core.setFailed('Must specify template name');
-                return;
-            }
-            packageTemplate(templateName);
+            const basePathToDefinitions = core.getInput('base-path-to-definitions');
+            packageDefinitions(basePathToDefinitions);
         }
     });
 }
@@ -81,18 +73,14 @@ function packageFeatures(featuresPath) {
         }
     });
 }
-function packageTemplate(templateName) {
+function packageDefinitions(basePath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // core.info('Asking vscdc to package template...')
             // const package = require('./vscdc/src/package').package;
-            core.info('Setting up output folders...');
-            const tmpDir = yield (0, utils_1.setupTemplateOutputFolders)(templateName);
-            core.info('Copying template files...');
-            yield (0, utils_1.copyTemplateFiles)(templateName);
-            core.info('Starting to tar');
-            yield (0, utils_1.tarDirectory)(tmpDir, 'devcontainer-template.tgz');
-            core.info('Package template has finished.');
+            core.info(`Archiving all definitions in ${basePath}`);
+            const definitionArchives = (0, utils_1.getDefinitionsAndPackage)(basePath);
+            core.info('Package definition has finished.');
         }
         catch (error) {
             if (error instanceof Error)
@@ -143,7 +131,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.copyTemplateFiles = exports.setupTemplateOutputFolders = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.renameLocal = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
+exports.getDefinitionsAndPackage = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.renameLocal = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const tar = __importStar(__nccwpck_require__(4674));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -158,8 +146,7 @@ exports.renameLocal = (0, util_1.promisify)(fs.rename);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
-    if (file === './devcontainer-features.tgz' ||
-        file === './devcontainer-template.tgz') {
+    if (file === './devcontainer-features.tgz') {
         return false;
     }
     return true;
@@ -167,7 +154,7 @@ const filter = (file, _) => {
 function tarDirectory(path, tgzName) {
     return __awaiter(this, void 0, void 0, function* () {
         return tar.create({ file: tgzName, C: path, filter }, ['.']).then(_ => {
-            core.info(`Compressed features directory to file ${tgzName}`);
+            core.info(`Compressed ${path} directory to file ${tgzName}`);
         });
     });
 }
@@ -203,29 +190,54 @@ function addMetadataToFeaturesJson(pathToFeatureDir) {
     });
 }
 exports.addMetadataToFeaturesJson = addMetadataToFeaturesJson;
-function setupTemplateOutputFolders(templateName) {
+// export async function setupTemplateOutputFolders(templateName: string) {
+//   await mkdirLocal(`./temp-dir/manifest/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers-readmes/${templateName}`, {
+//     recursive: true
+//   })
+//   return './temp-dir'
+// }
+// export async function copyTemplateFiles(templateName: string) {
+//   renameLocal(
+//     `./definition-manifest.json`,
+//     `./temp-dir/manifest/${templateName}/definition-manifest.json`
+//   )
+//   renameLocal(
+//     `./.devcontainer/`,
+//     `./temp-dir/containers/${templateName}/.devcontainer`
+//   )
+//   renameLocal(
+//     `./README.md`,
+//     `./temp-dir/containers-readmes/${templateName}/README.md`
+//   )
+// }
+function getDefinitionsAndPackage(basePath) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (0, exports.mkdirLocal)(`./temp-dir/manifest/${templateName}`, {
-            recursive: true
+        let archives = [];
+        fs.readdir(basePath, (err, files) => {
+            if (err) {
+                core.error(err.message);
+                core.setFailed(`failed to get list of definitions: ${err.message}`);
+                return;
+            }
+            files.forEach(file => {
+                core.info(`definition ==> ${file}`);
+                if (file !== "." && file !== "..") {
+                    const archiveName = `devcontainer-definition-${file}.tgz`;
+                    tarDirectory(`${basePath}/${file}`, archiveName);
+                    archives.push(archiveName);
+                }
+            });
         });
-        yield (0, exports.mkdirLocal)(`./temp-dir/containers/${templateName}`, {
-            recursive: true
-        });
-        yield (0, exports.mkdirLocal)(`./temp-dir/containers-readmes/${templateName}`, {
-            recursive: true
-        });
-        return './temp-dir';
+        return archives;
     });
 }
-exports.setupTemplateOutputFolders = setupTemplateOutputFolders;
-function copyTemplateFiles(templateName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        (0, exports.renameLocal)(`./definition-manifest.json`, `./temp-dir/manifest/${templateName}/definition-manifest.json`);
-        (0, exports.renameLocal)(`./.devcontainer/`, `./temp-dir/containers/${templateName}/.devcontainer`);
-        (0, exports.renameLocal)(`./README.md`, `./temp-dir/containers-readmes/${templateName}/README.md`);
-    });
-}
-exports.copyTemplateFiles = copyTemplateFiles;
+exports.getDefinitionsAndPackage = getDefinitionsAndPackage;
 
 
 /***/ }),

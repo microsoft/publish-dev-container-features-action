@@ -17,10 +17,7 @@ export const renameLocal = promisify(fs.rename)
 // Filter what gets included in the tar.c
 const filter = (file: string, _: tar.FileStat) => {
   // Don't include the archive itself.
-  if (
-    file === './devcontainer-features.tgz' ||
-    file === './devcontainer-template.tgz'
-  ) {
+  if (file === './devcontainer-features.tgz') {
     return false
   }
   return true
@@ -28,7 +25,7 @@ const filter = (file: string, _: tar.FileStat) => {
 
 export async function tarDirectory(path: string, tgzName: string) {
   return tar.create({file: tgzName, C: path, filter}, ['.']).then(_ => {
-    core.info(`Compressed features directory to file ${tgzName}`)
+    core.info(`Compressed ${path} directory to file ${tgzName}`)
   })
 }
 
@@ -64,30 +61,52 @@ export async function addMetadataToFeaturesJson(pathToFeatureDir: string) {
   await writeLocalFile(p, JSON.stringify(parsed, undefined, 4))
 }
 
-export async function setupTemplateOutputFolders(templateName: string) {
-  await mkdirLocal(`./temp-dir/manifest/${templateName}`, {
-    recursive: true
-  })
-  await mkdirLocal(`./temp-dir/containers/${templateName}`, {
-    recursive: true
-  })
-  await mkdirLocal(`./temp-dir/containers-readmes/${templateName}`, {
-    recursive: true
-  })
-  return './temp-dir'
-}
+// export async function setupTemplateOutputFolders(templateName: string) {
+//   await mkdirLocal(`./temp-dir/manifest/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers-readmes/${templateName}`, {
+//     recursive: true
+//   })
+//   return './temp-dir'
+// }
 
-export async function copyTemplateFiles(templateName: string) {
-  renameLocal(
-    `./definition-manifest.json`,
-    `./temp-dir/manifest/${templateName}/definition-manifest.json`
-  )
-  renameLocal(
-    `./.devcontainer/`,
-    `./temp-dir/containers/${templateName}/.devcontainer`
-  )
-  renameLocal(
-    `./README.md`,
-    `./temp-dir/containers-readmes/${templateName}/README.md`
-  )
+// export async function copyTemplateFiles(templateName: string) {
+//   renameLocal(
+//     `./definition-manifest.json`,
+//     `./temp-dir/manifest/${templateName}/definition-manifest.json`
+//   )
+//   renameLocal(
+//     `./.devcontainer/`,
+//     `./temp-dir/containers/${templateName}/.devcontainer`
+//   )
+//   renameLocal(
+//     `./README.md`,
+//     `./temp-dir/containers-readmes/${templateName}/README.md`
+//   )
+// }
+
+export async function getDefinitionsAndPackage(basePath: string) {
+  let archives: string[] = []
+  fs.readdir(basePath, (err, files) => {
+    if (err) {
+      core.error(err.message)
+      core.setFailed(`failed to get list of definitions: ${err.message}`)
+      return
+    }
+
+    files.forEach(file => {
+      core.info(`definition ==> ${file}`)
+      if (file !== '.' && file !== '..') {
+        const archiveName = `devcontainer-definition-${file}.tgz`
+        tarDirectory(`${basePath}/${file}`, archiveName)
+        archives.push(archiveName)
+      }
+    })
+  })
+
+  return archives
 }
