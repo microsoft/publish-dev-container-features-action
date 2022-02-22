@@ -1,6 +1,6 @@
 {
   "name": "devcontainer-features-publish-action",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "private": true,
   "description": "Action to help build/lint/publish feature definitions to be used in your devcontainer",
   "main": "lib/main.js",
