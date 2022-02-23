@@ -6,6 +6,10 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 "use strict";
 
+/*--------------------------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
+ *-------------------------------------------------------------------------------------------------------------*/
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -39,16 +43,45 @@ const core = __importStar(__nccwpck_require__(2186));
 const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            core.debug('Reading input parameters...');
-            // Defaults to root directory, "."
+        core.debug('Reading input parameters...');
+        const shouldPublishFeatures = core.getInput('publish-features') === 'true';
+        const shouldPublishTemplate = core.getInput('publish-definitions') === 'true';
+        if (shouldPublishFeatures) {
+            core.info('Publishing features...');
             const featuresPath = core.getInput('path-to-features');
-            core.debug(`Starting...`);
-            core.debug('Inserting metadata onto devcontainer-features.json');
+            packageFeatures(featuresPath);
+        }
+        if (shouldPublishTemplate) {
+            core.info('Publishing template...');
+            const basePathToDefinitions = core.getInput('path-to-definitions');
+            packageDefinitions(basePathToDefinitions);
+        }
+        // TODO: Programatically generate `devcontainer-index.json ?
+    });
+}
+function packageFeatures(featuresPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            core.info('Inserting metadata onto devcontainer-features.json');
             yield (0, utils_1.addMetadataToFeaturesJson)(featuresPath);
-            core.debug('calling tarFeaturesDirectory()');
-            yield (0, utils_1.tarFeaturesDirectory)(featuresPath);
-            core.debug('Run has finished.');
+            core.info('Starting to tar');
+            yield (0, utils_1.tarDirectory)(featuresPath, 'devcontainer-features.tgz');
+            core.info('Package features has finished.');
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+    });
+}
+function packageDefinitions(basePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // core.info('Asking vscdc to package template...')
+            // const package = require('./vscdc/src/package').package;
+            core.info(`Archiving all definitions in ${basePath}`);
+            const definitionArchives = yield (0, utils_1.getDefinitionsAndPackage)(basePath);
+            core.info('Package definition has finished.');
         }
         catch (error) {
             if (error instanceof Error)
@@ -99,7 +132,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addMetadataToFeaturesJson = exports.tarFeaturesDirectory = exports.writeLocalFile = exports.readLocalFile = void 0;
+exports.getDefinitionsAndPackage = exports.addMetadataToFeaturesJson = exports.tarDirectory = exports.renameLocal = exports.mkdirLocal = exports.writeLocalFile = exports.readLocalFile = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const tar = __importStar(__nccwpck_require__(4674));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -109,6 +142,8 @@ const util_1 = __nccwpck_require__(3837);
 const path_1 = __importDefault(__nccwpck_require__(1017));
 exports.readLocalFile = (0, util_1.promisify)(fs.readFile);
 exports.writeLocalFile = (0, util_1.promisify)(fs.writeFile);
+exports.mkdirLocal = (0, util_1.promisify)(fs.mkdir);
+exports.renameLocal = (0, util_1.promisify)(fs.rename);
 // Filter what gets included in the tar.c
 const filter = (file, _) => {
     // Don't include the archive itself.
@@ -117,16 +152,14 @@ const filter = (file, _) => {
     }
     return true;
 };
-function tarFeaturesDirectory(path) {
+function tarDirectory(path, tgzName) {
     return __awaiter(this, void 0, void 0, function* () {
-        return tar
-            .create({ file: 'devcontainer-features.tgz', C: path, filter }, ['.'])
-            .then(_ => {
-            core.info('Compressed features directory to file devcontainer-features.tgz');
+        return tar.create({ file: tgzName, C: path, filter }, ['.']).then(_ => {
+            core.info(`Compressed ${path} directory to file ${tgzName}`);
         });
     });
 }
-exports.tarFeaturesDirectory = tarFeaturesDirectory;
+exports.tarDirectory = tarDirectory;
 function addMetadataToFeaturesJson(pathToFeatureDir) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -158,6 +191,54 @@ function addMetadataToFeaturesJson(pathToFeatureDir) {
     });
 }
 exports.addMetadataToFeaturesJson = addMetadataToFeaturesJson;
+// export async function setupTemplateOutputFolders(templateName: string) {
+//   await mkdirLocal(`./temp-dir/manifest/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers/${templateName}`, {
+//     recursive: true
+//   })
+//   await mkdirLocal(`./temp-dir/containers-readmes/${templateName}`, {
+//     recursive: true
+//   })
+//   return './temp-dir'
+// }
+// export async function copyTemplateFiles(templateName: string) {
+//   renameLocal(
+//     `./definition-manifest.json`,
+//     `./temp-dir/manifest/${templateName}/definition-manifest.json`
+//   )
+//   renameLocal(
+//     `./.devcontainer/`,
+//     `./temp-dir/containers/${templateName}/.devcontainer`
+//   )
+//   renameLocal(
+//     `./README.md`,
+//     `./temp-dir/containers-readmes/${templateName}/README.md`
+//   )
+// }
+function getDefinitionsAndPackage(basePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let archives = [];
+        fs.readdir(basePath, (err, files) => {
+            if (err) {
+                core.error(err.message);
+                core.setFailed(`failed to get list of definitions: ${err.message}`);
+                return;
+            }
+            files.forEach(file => {
+                core.info(`definition ==> ${file}`);
+                if (file !== '.' && file !== '..') {
+                    const archiveName = `devcontainer-definition-${file}.tgz`;
+                    tarDirectory(`${basePath}/${file}`, archiveName);
+                    archives.push(archiveName);
+                }
+            });
+        });
+        return archives;
+    });
+}
+exports.getDefinitionsAndPackage = getDefinitionsAndPackage;
 
 
 /***/ }),

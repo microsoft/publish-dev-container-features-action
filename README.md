@@ -4,6 +4,7 @@
 
 Used in the [dev-container-features-template](https://github.com/microsoft/dev-container-features-template) illlustating an approach to publish custom "devcontainer features" to your GitHub repo.
 
+Additionally, can package dev container "definitions".
 
 ## Contributing
 
